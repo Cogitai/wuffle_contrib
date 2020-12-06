@@ -36,8 +36,8 @@
     "auto-test": "npm test -- --watch"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^1.0.0-rc.8",
     "async-didi": "^0.2.1",
-    "aws-sdk": "^2.786.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "exit-hook2": "^1.0.8",

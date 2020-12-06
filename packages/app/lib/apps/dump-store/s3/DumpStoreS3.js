@@ -1,4 +1,4 @@
-const S3 = require('aws-sdk/clients/s3');
+const { S3 } = require('@aws-sdk/client-s3');
 
 
 /**
@@ -22,8 +22,10 @@ function DumpStoreS3(logger, store, events) {
   } = process.env;
 
   const s3 = new S3({
-    accessKeyId,
-    secretAccessKey
+    credentials: {
+      accessKeyId,
+      secretAccessKey
+    }
   });
 
   var params = {
