@@ -59,17 +59,11 @@ function GithubIssues(logger, config, columns) {
       label => label && label !== newLabel && issueLabels.includes(label)
     );
 
-    if (labelsToRemove.length || labelsToAdd.length) {
-      update = {
-        ...update,
-        labels: [
-          ...issueLabels.filter(l => !labelsToRemove.includes(l)),
-          ...labelsToAdd
-        ]
-      };
-    }
-
-    return update;
+    return {
+      update,
+      labelsToAdd,
+      labelsToRemove
+    };
   }
 
   function findIssue(context, issue_number) {
@@ -133,23 +127,47 @@ function GithubIssues(logger, config, columns) {
       number: issue_number
     } = issue;
 
-    const update = {
-      ...getAssigneeUpdate(issue, newAssignee),
-      ...getStateUpdate(issue, newColumn)
-    };
+    const stateUpdate = getStateUpdate(issue, newColumn)
 
-    if (!hasKeys(update)) {
-      return;
+    const contextCalls = [];
+
+    // First add and remove labels as needed.
+    if (stateUpdate.labelsToAdd.length) {
+      const addLabelsParams = context.repo({
+        issue_number,
+        labels: stateUpdate.labelsToAdd
+      });
+      log.info(addLabelsParams, 'update addLabels');
+      contextCalls.push(context.github.issues.addLabels(addLabelsParams));
     }
 
-    const params = context.repo({
-      issue_number,
-      ...update
-    });
+    if (stateUpdate.labelsToRemove.length) {
+      stateUpdate.labelsToRemove.forEach(label => {
+        const removeLabelParams = context.repo({
+          issue_number,
+          name: label
+        });
+        log.info( removeLabelParams, 'update removeLabel ' + label);
+        contextCalls.push(context.github.issues.removeLabel(removeLabelParams));
+      });
+    }
 
-    log.info(params, 'update');
+    // Then update state and assignees.
+    const update = {
+      ...getAssigneeUpdate(issue, newAssignee),
+      ...stateUpdate.update
+    };
 
-    return context.github.issues.update(params);
+    if (hasKeys(update)) {
+      const params = context.repo({
+        issue_number,
+        ...update
+      });
+      log.info(params, 'update');
+      contextCalls.push(context.github.issues.update(params));
+    }
+
+    return Promise.all(contextCalls);
   }
 
 

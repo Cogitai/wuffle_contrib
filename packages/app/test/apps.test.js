@@ -61,7 +61,11 @@ describe('apps', () => {
 
         // then
         expect(update).to.eql({
-          state: 'closed'
+          update: {
+            state: 'closed'
+          },
+          labelsToAdd: [],
+          labelsToRemove: []
         });
 
       });
@@ -85,7 +89,11 @@ describe('apps', () => {
         const update = githubIssues.getStateUpdate(issue, newColumn);
 
         // then
-        expect(update).to.eql({});
+        expect(update).to.eql({
+          update: {},
+          labelsToAdd: [],
+          labelsToRemove: []
+        });
 
       });
 
@@ -112,8 +120,11 @@ describe('apps', () => {
 
         // then
         expect(update).to.eql({
-          state: 'closed',
-          labels: [ 'bug' ]
+          update: {
+            state: 'closed'
+          },
+          labelsToAdd: [],
+          labelsToRemove: [ 'needs review' ]
         });
 
       });
@@ -141,7 +152,9 @@ describe('apps', () => {
 
         // then
         expect(update).to.eql({
-          labels: [ 'bug' ]
+          update: {},
+          labelsToAdd: [],
+          labelsToRemove: [ 'needs review' ]
         });
 
       });
@@ -172,7 +185,9 @@ describe('apps', () => {
 
         // then
         expect(update).to.eql({
-          labels: [ 'bug' ]
+          update: {},
+          labelsToAdd: [],
+          labelsToRemove: [ 'in progress', 'needs review' ]
         });
 
       });
